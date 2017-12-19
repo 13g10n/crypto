@@ -57,17 +57,8 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		return 3;
 	}
 
-	//---------------------------------------------------------------
-	// Create the session key.
 	if (!pszPassword || !pszPassword[0])
 	{
-		//-----------------------------------------------------------
-		// No password was passed.
-		// Encrypt the file with a random session key, and write the 
-		// key to a file. 
-
-		//-----------------------------------------------------------
-		// Create a random session key. 
 		if (!CryptGenKey(
 			hCryptProv,
 			ENCRYPT_ALGORITHM,
@@ -77,8 +68,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			return 4;
 		}
 
-		//-----------------------------------------------------------
-		// Get the handle to the exchange public key. 
 		if (CryptGetUserKey(
 			hCryptProv,
 			AT_KEYEXCHANGE,
@@ -91,26 +80,21 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		{
 			if (NTE_NO_KEY == GetLastError())
 			{
-				// No exchange key exists. Try to create one.
 				if (!CryptGenKey(
 					hCryptProv,
 					AT_KEYEXCHANGE,
 					CRYPT_EXPORTABLE,
 					&hXchgKey))
 				{
-					//
-					return 99;
+					return 5;
 				}
 			}
 			else
 			{
-				//
-				return 99;
+				return 6;
 			}
 		}
 
-		//-----------------------------------------------------------
-		// Determine size of the key BLOB, and allocate memory. 
 		if (CryptExportKey(
 			hKey,
 			hXchgKey,
@@ -125,8 +109,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		}
 		else
 		{
-			//
-			return 99;
+			return 7;
 		}
 
 		if (pbKeyBlob = (BYTE *)malloc(dwKeyBlobLen))
@@ -136,13 +119,9 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		}
 		else
 		{
-			//
-			return 99;
+			return 8;
 		}
 
-		//-----------------------------------------------------------
-		// Encrypt and export the session key into a simple key 
-		// BLOB. 
 		if (CryptExportKey(
 			hKey,
 			hXchgKey,
@@ -155,18 +134,14 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		}
 		else
 		{
-			//
-			return 99;
+			return 9;
 		}
 
-		//-----------------------------------------------------------
-		// Release the key exchange key handle. 
 		if (hXchgKey)
 		{
 			if (!(CryptDestroyKey(hXchgKey)))
 			{
-				//
-				return 99;
+				return 10;
 			}
 
 			hXchgKey = 0;
@@ -181,8 +156,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			&dwCount,
 			NULL))
 		{
-			//
-			return 99;
+			return 11;
 		}
 		else
 		{
@@ -199,7 +173,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			NULL))
 		{
 			//
-			return 99;
+			return 12;
 		}
 		else
 		{
@@ -235,7 +209,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		else
 		{
 			//
-			return 99;
+			return 13;
 		}
 
 		//-----------------------------------------------------------
@@ -252,7 +226,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		else
 		{
 			//
-			return 99;
+			return 14;
 		}
 
 		//-----------------------------------------------------------
@@ -271,7 +245,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		else
 		{
 			//
-			return 99;
+			return 15;
 		}
 	}
 
@@ -308,7 +282,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 	else
 	{
 		//
-		return 99;
+		return 16;
 	}
 
 	//---------------------------------------------------------------
@@ -327,7 +301,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			NULL))
 		{
 			//
-			return 99;
+			return 17;
 		}
 
 		if (dwCount < dwBlockLen)
@@ -347,7 +321,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			dwBufferLen))
 		{
 			//
-			return 99;
+			return 18;
 		}
 
 		//-----------------------------------------------------------
@@ -360,7 +334,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			NULL))
 		{
 			//
-			return 99;
+			return 19;
 		}
 
 		//-----------------------------------------------------------

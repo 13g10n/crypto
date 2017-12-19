@@ -19,8 +19,6 @@ int MyDecryptFile(
 	DWORD dwBlockLen;
 	DWORD dwBufferLen;
 
-	//---------------------------------------------------------------
-	// Open the source file. 
 	hSourceFile = CreateFile(
 		pszSourceFile,
 		FILE_READ_DATA,
@@ -34,8 +32,6 @@ int MyDecryptFile(
 		return 1;
 	}
 
-	//---------------------------------------------------------------
-	// Open the destination file. 
 	hDestinationFile = CreateFile(
 		pszDestinationFile,
 		FILE_WRITE_DATA,
@@ -49,30 +45,21 @@ int MyDecryptFile(
 		return 2;
 	}
 
-	if (CryptAcquireContext(
+	if (!CryptAcquireContext(
 		&hCryptProv,
 		NULL,
 		MS_ENHANCED_PROV,
 		PROV_RSA_FULL,
 		0))
 	{
-		_tprintf(
-			TEXT("A cryptographic provider has been acquired. \n"));
-	}
-	else
-	{
 		return 3;
 	}
 
 	if (!pszPassword || !pszPassword[0])
 	{
-		//-----------------------------------------------------------
-		// Decrypt the file with the saved session key. 
-
 		DWORD dwKeyBlobLen;
 		PBYTE pbKeyBlob = NULL;
 
-		// Read the key BLOB length from the source file. 
 		if (!ReadFile(
 			hSourceFile,
 			&dwKeyBlobLen,
@@ -80,24 +67,14 @@ int MyDecryptFile(
 			&dwCount,
 			NULL))
 		{
-			/*MyHandleError(
-				TEXT("Error reading key BLOB length!\n"),
-				GetLastError());
-			goto Exit_MyDecryptFile; */
-			return 4;
+			return 20;
 		}
 
-		// Allocate a buffer for the key BLOB.
 		if (!(pbKeyBlob = (PBYTE)malloc(dwKeyBlobLen)))
 		{
-			/*MyHandleError(
-				TEXT("Memory allocation error.\n"),
-				E_OUTOFMEMORY);*/
-			return 99;
+			return 21;
 		}
 
-		//-----------------------------------------------------------
-		// Read the key BLOB from the source file. 
 		if (!ReadFile(
 			hSourceFile,
 			pbKeyBlob,
@@ -105,11 +82,7 @@ int MyDecryptFile(
 			&dwCount,
 			NULL))
 		{
-			/* MyHandleError(
-				TEXT("Error reading key BLOB length!\n"),
-				GetLastError());
-			goto Exit_MyDecryptFile;*/
-			return 99;
+			return 22;
 		}
 
 		//-----------------------------------------------------------
