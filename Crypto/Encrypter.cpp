@@ -73,8 +73,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			AT_KEYEXCHANGE,
 			&hXchgKey))
 		{
-			_tprintf(
-				TEXT("The user public key has been retrieved. \n"));
 		}
 		else
 		{
@@ -103,9 +101,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			NULL,
 			&dwKeyBlobLen))
 		{
-			_tprintf(
-				TEXT("The key BLOB is %d bytes long. \n"),
-				dwKeyBlobLen);
 		}
 		else
 		{
@@ -114,8 +109,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 
 		if (pbKeyBlob = (BYTE *)malloc(dwKeyBlobLen))
 		{
-			_tprintf(
-				TEXT("Memory is allocated for the key BLOB. \n"));
 		}
 		else
 		{
@@ -130,7 +123,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			pbKeyBlob,
 			&dwKeyBlobLen))
 		{
-			_tprintf(TEXT("The key has been exported. \n"));
 		}
 		else
 		{
@@ -146,9 +138,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 
 			hXchgKey = 0;
 		}
-
-		//-----------------------------------------------------------
-		// Write the size of the key BLOB to the destination file. 
+ 
 		if (!WriteFile(
 			hDestinationFile,
 			&dwKeyBlobLen,
@@ -158,13 +148,7 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		{
 			return 11;
 		}
-		else
-		{
-			_tprintf(TEXT("A file header has been written. \n"));
-		}
 
-		//-----------------------------------------------------------
-		// Write the key BLOB to the destination file. 
 		if (!WriteFile(
 			hDestinationFile,
 			pbKeyBlob,
@@ -172,31 +156,13 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			&dwCount,
 			NULL))
 		{
-			//
 			return 12;
 		}
-		else
-		{
-			_tprintf(
-				TEXT("The key BLOB has been written to the ")
-				TEXT("file. \n"));
-		}
 
-		// Free memory.
 		free(pbKeyBlob);
 	}
 	else
 	{
-
-		//-----------------------------------------------------------
-		// The file will be encrypted with a session key derived 
-		// from a password.
-		// The session key will be recreated when the file is 
-		// decrypted only if the password used to create the key is 
-		// available. 
-
-		//-----------------------------------------------------------
-		// Create a hash object. 
 		if (CryptCreateHash(
 			hCryptProv,
 			CALG_MD5,
@@ -204,33 +170,24 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			0,
 			&hHash))
 		{
-			_tprintf(TEXT("A hash object has been created. \n"));
 		}
 		else
 		{
-			//
 			return 13;
 		}
-
-		//-----------------------------------------------------------
-		// Hash the password. 
+ 
 		if (CryptHashData(
 			hHash,
 			(BYTE *)pszPassword,
 			lstrlen(pszPassword),
 			0))
 		{
-			_tprintf(
-				TEXT("The password has been added to the hash. \n"));
 		}
 		else
 		{
-			//
 			return 14;
 		}
 
-		//-----------------------------------------------------------
-		// Derive a session key from the hash object. 
 		if (CryptDeriveKey(
 			hCryptProv,
 			ENCRYPT_ALGORITHM,
@@ -238,31 +195,15 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			KEYLENGTH,
 			&hKey))
 		{
-			_tprintf(
-				TEXT("An encryption key is derived from the ")
-				TEXT("password hash. \n"));
 		}
 		else
 		{
-			//
 			return 15;
 		}
 	}
 
-	//---------------------------------------------------------------
-	// The session key is now ready. If it is not a key derived from 
-	// a  password, the session key encrypted with the private key 
-	// has been written to the destination file.
-
-	//---------------------------------------------------------------
-	// Determine the number of bytes to encrypt at a time. 
-	// This must be a multiple of ENCRYPT_BLOCK_SIZE.
-	// ENCRYPT_BLOCK_SIZE is set by a #define statement.
 	dwBlockLen = 1000 - 1000 % ENCRYPT_BLOCK_SIZE;
 
-	//---------------------------------------------------------------
-	// Determine the block size. If a block cipher is used, 
-	// it must have room for an extra block. 
 	if (ENCRYPT_BLOCK_SIZE > 1)
 	{
 		dwBufferLen = dwBlockLen + ENCRYPT_BLOCK_SIZE;
@@ -272,27 +213,17 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 		dwBufferLen = dwBlockLen;
 	}
 
-	//---------------------------------------------------------------
-	// Allocate memory. 
 	if (pbBuffer = (BYTE *)malloc(dwBufferLen))
 	{
-		_tprintf(
-			TEXT("Memory has been allocated for the buffer. \n"));
 	}
 	else
 	{
-		//
 		return 16;
 	}
 
-	//---------------------------------------------------------------
-	// In a do loop, encrypt the source file, 
-	// and write to the source file. 
 	bool fEOF = FALSE;
 	do
 	{
-		//-----------------------------------------------------------
-		// Read up to dwBlockLen bytes from the source file. 
 		if (!ReadFile(
 			hSourceFile,
 			pbBuffer,
@@ -309,8 +240,6 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			fEOF = TRUE;
 		}
 
-		//-----------------------------------------------------------
-		// Encrypt data. 
 		if (!CryptEncrypt(
 			hKey,
 			NULL,
@@ -320,12 +249,9 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			&dwCount,
 			dwBufferLen))
 		{
-			//
 			return 18;
 		}
-
-		//-----------------------------------------------------------
-		// Write the encrypted data to the destination file. 
+ 
 		if (!WriteFile(
 			hDestinationFile,
 			pbBuffer,
@@ -333,21 +259,11 @@ int MyEncryptFile(LPTSTR pszSourceFile, LPTSTR pszDestinationFile, LPTSTR pszPas
 			&dwCount,
 			NULL))
 		{
-			//
 			return 19;
 		}
 
-		//-----------------------------------------------------------
-		// End the do loop when the last block of the source file 
-		// has been read, encrypted, and written to the destination 
-		// file.
 	} while (!fEOF);
 
-	fReturn = true;
-
-Exit_MyEncryptFile:
-	//---------------------------------------------------------------
-	// Close files.
 	if (hSourceFile)
 	{
 		CloseHandle(hSourceFile);
@@ -358,47 +274,26 @@ Exit_MyEncryptFile:
 		CloseHandle(hDestinationFile);
 	}
 
-	//---------------------------------------------------------------
-	// Free memory. 
 	if (pbBuffer)
 	{
 		free(pbBuffer);
 	}
-
-
-	//-----------------------------------------------------------
-	// Release the hash object. 
+ 
 	if (hHash)
 	{
-		if (!(CryptDestroyHash(hHash)))
-		{
-			//
-		}
-
+		CryptDestroyHash(hHash);
 		hHash = NULL;
 	}
 
-	//---------------------------------------------------------------
-	// Release the session key. 
 	if (hKey)
 	{
-		if (!(CryptDestroyKey(hKey)))
-		{
-			//
-		}
+		CryptDestroyKey(hKey);
 	}
 
-	//---------------------------------------------------------------
-	// Release the provider handle. 
 	if (hCryptProv)
 	{
-		if (!(CryptReleaseContext(hCryptProv, 0)))
-		{
-
-		}
+		CryptReleaseContext(hCryptProv, 0);
 	}
 
-	if (fReturn) {
-		return 0;
-	}
+	return 0;
 } 
